@@ -2,4 +2,4 @@ homepage: "https://github.com/Popbrainads/gtm-popbrain-ads-pixel"
 documentation: "https://github.com/Popbrainads/gtm-popbrain-ads-pixel#readme"
 versions:
   - sha: "61367d95135128534da94a8c06e09af887c72b62"
-    changeNotes: "Initial release v1.0.0 - Custom event tracking for Popbrain Ads platform with flexible parameter support"
+    changeNotes: "Initial release v1.0.1 - Popbrain Ads Pixel fixed the issue with the pixel request not being sent when the event name is 'pageview'."
