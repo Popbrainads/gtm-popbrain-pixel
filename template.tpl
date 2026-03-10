@@ -14,7 +14,7 @@ ___INFO___
   "securityGroups": [],
   "id": "cvt_temp_public_id",
   "type": "TAG",
-  "version": 1,
+  "version": 2,
   "brand": {
     "displayName": "Popbrain",
     "id": "popbrain_ads",
