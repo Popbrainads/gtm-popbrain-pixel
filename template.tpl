@@ -41,6 +41,19 @@ ___TEMPLATE_PARAMETERS___
     "help": "Name of the event to track (e.g., page_view, purchase, signup)"
   },
   {
+  "displayName": "Advertiser ID",
+  "name": "advertiserId",
+  "type": "TEXT",
+  "simpleValueType": true,
+  "alwaysInSummary": true,
+  "valueValidators": [
+    {
+      "type": "NON_EMPTY"
+    }
+  ],
+  "help": "Your Popbrain advertiser account ID."
+},
+  {
     "alwaysInSummary": true,
     "valueValidators": [
       {
@@ -83,7 +96,7 @@ ___WEB_PERMISSIONS___
   {
     "instance": {
       "key": {
-        "publicId": "send_pixel",
+        "publicId": "inject_script",
         "versionId": "1"
       },
       "param": [
@@ -94,7 +107,7 @@ ___WEB_PERMISSIONS___
             "listItem": [
               {
                 "type": 1,
-                "string": "https://gtm.popbrain.ai/*"
+                "string": "https://popbrain.ai/*"
               }
             ]
           }
@@ -103,6 +116,40 @@ ___WEB_PERMISSIONS___
     },
     "isRequired": true
   },
+{
+  "instance": {
+    "key": {
+      "publicId": "access_globals",
+      "versionId": "1"
+    },
+    "param": [
+      {
+        "key": "keys",
+        "value": {
+          "type": 2,
+          "listItem": [
+            {
+              "type": 3,
+              "mapKey": [
+                {"type": 1, "string": "key"},
+                {"type": 1, "string": "read"},
+                {"type": 1, "string": "write"},
+                {"type": 1, "string": "execute"}
+              ],
+              "mapValue": [
+                {"type": 1, "string": "_popbrainevent"},
+                {"type": 8, "boolean": true},
+                {"type": 8, "boolean": true},
+                {"type": 8, "boolean": true}
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "isRequired": true
+},
   {
     "instance": {
       "key": {
@@ -125,53 +172,62 @@ ___WEB_PERMISSIONS___
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
-const logToConsole = require('logToConsole');
-const sendPixel = require('sendPixel');
+// Required APIs
+// Required APIs
+const injectScript = require('injectScript');
+const copyFromWindow = require('copyFromWindow');
+const makeTableMap = require('makeTableMap');
+const log = require('logToConsole');
 const encodeUriComponent = require('encodeUriComponent');
+const createQueue = require('createQueue');
 
-// Get template data
-const eventName = data.eventName;
-const pageURL = data.pageURL;
-const customParams = data.customParams || [];
+// Pixel script URL
+const SCRIPT_URL =
+  "https://popbrain.ai/gtm-loader.js?id=" +
+  encodeUriComponent(data.advertiserId);
 
-// Base API endpoint
-const baseUrl = 'https://gtm.popbrain.ai/gtm/events';
+// Create/get queue
+const popbrainEvent = createQueue('_popbrainevent');
 
-// Build query parameters
-let queryParams = [];
+log("Popbrain GTM: Template fired");
 
-// Add required parameters
-if (eventName) {
-  queryParams.push('eventName=' + encodeUriComponent(eventName));
+// Build event payload explicitly
+function buildPayload() {
+  const payload = {
+    name: data.eventName || 'page_view',
+    url: data.pageURL,
+    advertiserId: data.advertiserId
+  };
+
+  const customParams = data.customParams
+    ? makeTableMap(data.customParams, 'key', 'value')
+    : {};
+
+  for (let key in customParams) {
+    payload[key] = customParams[key];
+  }
+
+  return payload;
 }
 
-if (pageURL) {
-  queryParams.push('pageURL=' + encodeUriComponent(pageURL));
-}
-
-// Add custom parameters if provided
-if (customParams && customParams.length > 0) {
-  customParams.forEach(function(param) {
-    if (param.key && param.value) {
-      queryParams.push(encodeUriComponent(param.key) + '=' + encodeUriComponent(param.value));
-    }
-  });
-}
-
-// Construct final URL
-const finalUrl = baseUrl + '?' + queryParams.join('&');
-
-// Log for debugging
-logToConsole('Popbrain Ads Pixel - Sending event to: ' + finalUrl);
-
-// Send the pixel request
-sendPixel(finalUrl, function() {
-  // Success callback
-  logToConsole('Popbrain Ads Pixel - Event sent successfully');
+// Push event to queue
+function sendEvent() {
+  const payload = buildPayload();
+  log("Popbrain GTM: Sending event", payload);
+  popbrainEvent(payload);
   data.gtmOnSuccess();
-}, function() {
-  // Failure callback
-  logToConsole('Popbrain Ads Pixel - Pixel request failed');
-  logToConsole('Popbrain Ads Pixel - URL attempted: ' + finalUrl);
-  data.gtmOnFailure();
-});
+}
+
+// Load pixel script once via cache key, then send event
+injectScript(
+  SCRIPT_URL,
+  function() {
+    log("Popbrain GTM: Script loaded");
+    sendEvent();
+  },
+  function() {
+    log("Popbrain GTM: Script failed to load");
+    data.gtmOnFailure();
+  },
+  'popbrain_pixel_script'  // cache key - prevents double injection
+);
