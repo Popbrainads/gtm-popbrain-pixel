@@ -1,7 +1,8 @@
 homepage: "https://github.com/Popbrainads/gtm-popbrain-pixel"
 documentation: "https://github.com/Popbrainads/gtm-popbrain-pixel#readme"
 versions:
-  - sha: "54bf980682319fe85efadad9766df47ab84f7c28"
-    changeNotes: "Initial release v1.1.0 - Popbrain Ads Pixel fixed the issue with the pixel request not being sent when the event name is 'pageview'."
   - sha: "b20bc93b9a830ea9669326cc61e038958e0d729a"
     changeNotes: "v1.2.0 - Replaced manual queue setup with createQueue API for reliable event pushing. Fixed callInWindow dot-notation issue that caused events to silently fail. Added duplicate page_view guard to prevent double-firing when GTM tag and pixel script both fire on load. Manual _popbrainevent.push() calls from outside GTM are now fully supported."
+  
+  - sha: "54bf980682319fe85efadad9766df47ab84f7c28"
+    changeNotes: "Initial release v1.1.0 - Popbrain Ads Pixel fixed the issue with the pixel request not being sent when the event name is 'pageview'."
