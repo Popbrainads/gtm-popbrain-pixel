@@ -14,7 +14,7 @@ ___INFO___
   "securityGroups": [],
   "id": "cvt_temp_public_id",
   "type": "TAG",
-  "version": 2,
+  "version": 1,
   "brand": {
     "displayName": "Popbrain",
     "id": "popbrain_ads",
@@ -27,64 +27,160 @@ ___TEMPLATE_PARAMETERS___
 
 [
   {
+    "displayName": "Advertiser ID",
+    "name": "advertiserId",
+    "type": "TEXT",
+    "simpleValueType": true,
     "alwaysInSummary": true,
-    "valueValidators": [
-      {
-        "type": "NON_EMPTY"
-      }
+    "valueValidators": [{ "type": "NON_EMPTY" }],
+    "help": "Your Popbrain advertiser account ID."
+  },
+  {
+    "displayName": "Pixel Type",
+    "name": "pixelType",
+    "type": "RADIO",
+    "simpleValueType": true,
+    "alwaysInSummary": true,
+    "defaultValue": "base",
+    "radioItems": [
+      { "value": "base",  "displayValue": "Base pixel" },
+      { "value": "event", "displayValue": "Event pixel" }
     ],
+    "help": "Base pixel fires page_view on every page. Event pixel fires a named conversion event."
+  },
+  {
     "displayName": "Event Name",
-    "simpleValueType": true,
     "name": "eventName",
-    "type": "TEXT",
-    "defaultValue": "page_view",
-    "help": "Name of the event to track (e.g., page_view, purchase, signup)"
+    "type": "SELECT",
+    "simpleValueType": true,
+    "alwaysInSummary": true,
+    "defaultValue": "purchase",
+    "selectItems": [
+     { "value": "view_content",          "displayValue": "view_content" },
+      { "value": "search",                "displayValue": "search" },
+      { "value": "add_to_cart",           "displayValue": "add_to_cart" },
+      { "value": "add_to_wishlist",       "displayValue": "add_to_wishlist" },
+      { "value": "start_checkout",        "displayValue": "start_checkout"},
+      { "value": "add_payment_info",      "displayValue": "add_payment_info" },
+      { "value": "make_purchase",         "displayValue": "make_purchase" },
+      { "value": "lead",                  "displayValue": "lead" },
+      { "value": "complete_registration", "displayValue": "complete_registration" },
+      { "value": "app_install",           "displayValue": "app_install" },
+      { "value": "signup",                "displayValue": "signup" },
+      { "value": "contact",               "displayValue": "contact" },
+      { "value": "subscribe",             "displayValue": "subscribe" },
+      { "value": "custom",                "displayValue": "[Custom]" }
+    ],
+    "enablingConditions": [
+      { "paramName": "pixelType", "paramValue": "event", "type": "EQUALS" }
+    ],
+    "help": "Select a standard event or choose [Custom] to enter your own."
   },
   {
-  "displayName": "Advertiser ID",
-  "name": "advertiserId",
-  "type": "TEXT",
-  "simpleValueType": true,
-  "alwaysInSummary": true,
-  "valueValidators": [
-    {
-      "type": "NON_EMPTY"
-    }
-  ],
-  "help": "Your Popbrain advertiser account ID."
-},
-  {
-    "alwaysInSummary": true,
+    "displayName": "Custom Event Name",
+    "name": "customEventName",
+    "type": "TEXT",
+    "simpleValueType": true,
+    "alwaysInSummary": false,
+    "enablingConditions": [
+      { "paramName": "eventName", "paramValue": "custom", "type": "EQUALS" }
+    ],
     "valueValidators": [
       {
-        "type": "NON_EMPTY"
+        "type": "NON_EMPTY",
+        "enablingConditions": [
+          { "paramName": "eventName", "paramValue": "custom", "type": "EQUALS" }
+        ]
       }
     ],
-    "displayName": "Page URL",
-    "simpleValueType": true,
-    "name": "pageURL",
-    "type": "TEXT",
-    "defaultValue": "{{Page URL}}",
-    "help": "URL of the page where event occurred"
+    "help": "Enter your custom event name (e.g. add_to_user_cart)."
   },
   {
-    "displayName": "Additional Parameters",
-    "name": "customParams",
-    "type": "SIMPLE_TABLE",
-    "help": "Optional custom parameters to send with the event",
-    "newRowButtonText": "Add Parameter",
-    "simpleTableColumns": [
+    "displayName": "Custom Parameters",
+    "name": "customParamsGroup",
+    "type": "GROUP",
+    "groupStyle": "ZIPPY_CLOSED",
+    "enablingConditions": [
+      { "paramName": "pixelType", "paramValue": "event", "type": "EQUALS" }
+    ],
+    "subParams": [
       {
-        "defaultValue": "",
-        "displayName": "Parameter Name",
-        "name": "key",
-        "type": "TEXT"
+        "displayName": "Send item-url",
+        "name": "enableItemUrl",
+        "type": "CHECKBOX",
+        "simpleValueType": true,
+        "defaultValue": false,
+        "checkboxText": "item-url",
+        "help": "Send the page URL as item-url with the event."
       },
       {
-        "defaultValue": "",
-        "displayName": "Parameter Value", 
-        "name": "value",
-        "type": "TEXT"
+        "displayName": "item-url value",
+        "name": "itemUrl",
+        "type": "TEXT",
+        "simpleValueType": true,
+        "defaultValue": "{{Page URL}}",
+        "enablingConditions": [
+          { "paramName": "enableItemUrl", "paramValue": true, "type": "EQUALS" }
+        ]
+      },
+      {
+        "displayName": "Send revenue",
+        "name": "enableRevenue",
+        "type": "CHECKBOX",
+        "simpleValueType": true,
+        "defaultValue": false,
+        "checkboxText": "revenue",
+        "help": "Send a revenue value with the event."
+      },
+      {
+        "displayName": "revenue value",
+        "name": "revenue",
+        "type": "TEXT",
+        "simpleValueType": true,
+        "enablingConditions": [
+          { "paramName": "enableRevenue", "paramValue": true, "type": "EQUALS" }
+        ]
+      },
+      {
+        "displayName": "Send currency",
+        "name": "enableCurrency",
+        "type": "CHECKBOX",
+        "simpleValueType": true,
+        "defaultValue": false,
+        "checkboxText": "currency",
+        "help": "Send a currency code with the event (e.g. USD)."
+      },
+      {
+        "displayName": "currency value",
+        "name": "currency",
+        "type": "TEXT",
+        "simpleValueType": true,
+        "defaultValue": "USD",
+        "enablingConditions": [
+          { "paramName": "enableCurrency", "paramValue": true, "type": "EQUALS" }
+        ]
+      },
+      {
+        "displayName": "Send other parameters",
+        "name": "enableOtherParams",
+        "type": "CHECKBOX",
+        "simpleValueType": true,
+        "defaultValue": false,
+        "checkboxText": "Other parameters",
+        "help": "Send additional custom key-value parameters with the event."
+      },
+      {
+        "displayName": "",
+        "name": "otherParams",
+        "type": "SIMPLE_TABLE",
+        "newRowButtonText": "Add Parameter",
+        "enablingConditions": [
+          { "paramName": "enableOtherParams", "paramValue": true, "type": "EQUALS" }
+        ],
+        "simpleTableColumns": [
+          { "displayName": "Parameter Name",  "name": "key",   "type": "TEXT", "defaultValue": "" },
+          { "displayName": "Parameter Value", "name": "value", "type": "TEXT", "defaultValue": "" }
+        ]
       }
     ]
   }
@@ -170,64 +266,62 @@ ___WEB_PERMISSIONS___
   }
 ]
 
+
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
-// Required APIs
-// Required APIs
-const injectScript = require('injectScript');
-const copyFromWindow = require('copyFromWindow');
-const makeTableMap = require('makeTableMap');
-const log = require('logToConsole');
+const injectScript       = require('injectScript');
+const makeTableMap       = require('makeTableMap');
+const log                = require('logToConsole');
 const encodeUriComponent = require('encodeUriComponent');
-const createQueue = require('createQueue');
+const createQueue        = require('createQueue');
 
-// Pixel script URL
 const SCRIPT_URL =
-  "https://popbrain.ai/gtm-loader.js?id=" +
+  'https://popbrain.ai/gtm-loader.js?id=' +
   encodeUriComponent(data.advertiserId);
 
-// Create/get queue
 const popbrainEvent = createQueue('_popbrainevent');
+const pixelType     = data.pixelType;
 
-log("Popbrain GTM: Template fired");
+log('Popbrain GTM: fired, pixelType =', pixelType);
 
-// Build event payload explicitly
-function buildPayload() {
-  const payload = {
-    name: data.eventName || 'page_view',
-    url: data.pageURL,
+// ── EVENT pixel — fires only when user chose "Event pixel" ───────────────────
+
+if (pixelType === 'event') {
+  var resolvedName = data.eventName === 'custom'
+    ? data.customEventName
+    : data.eventName;
+
+  var evPayload = {
+    name:         resolvedName,
     advertiserId: data.advertiserId
   };
 
-  const customParams = data.customParams
-    ? makeTableMap(data.customParams, 'key', 'value')
-    : {};
+  if (data.enableItemUrl  && data.itemUrl)   evPayload['item-url'] = data.itemUrl;
+  if (data.enableRevenue  && data.revenue)   evPayload.revenue     = data.revenue;
+  if (data.enableCurrency && data.currency)  evPayload.currency    = data.currency;
 
-  for (let key in customParams) {
-    payload[key] = customParams[key];
+  if (data.enableOtherParams && data.otherParams) {
+    var extras = makeTableMap(data.otherParams, 'key', 'value');
+    for (var k in extras) {
+      evPayload[k] = extras[k];
+    }
   }
 
-  return payload;
+  log('Popbrain GTM: pushing event', resolvedName, evPayload);
+  popbrainEvent(evPayload);
 }
 
-// Push event to queue
-function sendEvent() {
-  const payload = buildPayload();
-  log("Popbrain GTM: Sending event", payload);
-  popbrainEvent(payload);
-  data.gtmOnSuccess();
-}
+// ── Load script — page_view handled automatically by popbrain.js on init ─────
 
-// Load pixel script once via cache key, then send event
 injectScript(
   SCRIPT_URL,
   function() {
-    log("Popbrain GTM: Script loaded");
-    sendEvent();
+    log('Popbrain GTM: script loaded');
+    data.gtmOnSuccess();
   },
   function() {
-    log("Popbrain GTM: Script failed to load");
+    log('Popbrain GTM: script failed');
     data.gtmOnFailure();
   },
-  'popbrain_pixel_script'  // cache key - prevents double injection
+  'popbrain_pixel_script'
 );

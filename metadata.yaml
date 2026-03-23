@@ -1,6 +1,9 @@
 homepage: "https://github.com/Popbrainads/gtm-popbrain-pixel"
 documentation: "https://github.com/Popbrainads/gtm-popbrain-pixel#readme"
 versions:
+  - sha: ""
+    changeNotes: "v1.3.0 - Added pixel type selector (Base pixel / Event pixel) with radio button UI. Base pixel fires page_view silently on every page load without exposing Page URL field. Event pixel exposes Event Name dropdown with full Popbrain standard event list (View Content, Search, Add To Cart, Add To Wishlist, Start Checkout, Add Payment Info, Make Purchase, Lead, Complete Registration, App Install, Other, Signup, Contact, Subscribe) plus [Custom] option that reveals a free-text Custom Event Name field. Added Custom Parameters group (collapsed by default) with individual checkboxes for item-url, revenue, currency, and Other parameters — each checkbox reveals its value input inline. Custom Event Name field is hidden unless [Custom] is selected in the Event Name dropdown."
+    
   - sha: "b20bc93b9a830ea9669326cc61e038958e0d729a"
     changeNotes: "v1.2.0 - Replaced manual queue setup with createQueue API for reliable event pushing. Fixed callInWindow dot-notation issue that caused events to silently fail. Added duplicate page_view guard to prevent double-firing when GTM tag and pixel script both fire on load. Manual _popbrainevent.push() calls from outside GTM are now fully supported."
   
